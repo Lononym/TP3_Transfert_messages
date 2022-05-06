@@ -43,7 +43,7 @@
 	\begin{figure}[H]
 		\centering
 		\includegraphics[width=13cm]{photo/situation}
-		\caption{Sortie sur la console}
+		\caption{Structure fonctionnelle de l'application}
 		\label{fig:structure_fontionnelle}
 	\end{figure}
 	
@@ -81,7 +81,7 @@ pouvez faire un printf).\\
 	\begin{figure}[H]
 		\centering
 		\includegraphics[width=13cm]{photo/reseau_petri}
-		\caption{Sortie sur la console}
+		\caption{Réseau de Pétri du comportement des fonctions \texttt{Estime\_Heure} et \texttt{Corrige\_Heure}}
 		\label{fig:reseau_petri}
 	\end{figure}
 	
@@ -161,13 +161,13 @@ pouvez faire un printf).\\
 		\label{fig:interruption_corrige_heure}
 	\end{figure}
 	
-	La première chose que l'on observe ici est la présence de trois affichage de l'heure et que les deux premiers sont séparé de moins de dix coups d'horloges. Si l'on zoome sur l'endroit où le deuxième affichage de l'heure s'effectue nous obtenons la figure \ref{fig:semB}.
+	La première chose que l'on observe ici est la présence de trois affichage de l'heure et que les deux premiers sont séparé de moins de dix coups d'horloges. Si l'on zoome sur l'endroit où le deuxième affichage de l'heure s'effectue nous obtenons la figure \ref{fig:interruption_corrige_heure_zoom}.
 
 	\begin{figure}[H]
 		\centering
 		\includegraphics[width=16cm]{photo/affichage_normal/semB}
 		\caption{Zoom sur le 2e affichage de la figure \ref{fig:interruption_corrige_heure}}
-		\label{fig:semB}
+		\label{fig:interruption_corrige_heure_zoom}
 	\end{figure}
 
 	On observe sur la figure ci-dessus l'activation de \texttt{HorlogeRelle}. Cette tâche va envoyer une nouvelle donnée sur la file de message HeureRéelle ce qui "dit" va dire à la tâche \texttt{Corrige\_Heure} de s'exécuter. Ayant une priorité supérieure à \texttt{Estime\_Heure}, \texttt{Corrige\_Heure} va s'exécuter en premier puis mettre à 0 le compteur DivH10 comme prévu. La tâche \texttt{Estime\_Heure} va ensuite s'exécuter et donc incrémenter le compteur DivH10. C'est pourquoi on ne compte que 9 événements sur H10 entre le deuxième affichage de l'heure et le troisième sur la figure \ref{fig:interruption_corrige_heure} contrairement à la figure \ref{fig:comportement_normal_fois_3} où il y a 10 événements.
@@ -243,6 +243,27 @@ pouvez faire un printf).\\
 
 	\subsection{Différences liées au type de sémaphore}
 	
+	On cherche ici à montrer la différence de comportement entre un sémaphore de type booléen ou de "type compteur". Pour utiliser un type booléen on déclarera le sémaphore avec la fonction \texttt{semBCreate} tandis que pour utiliser un "type compteur" on utilisera \texttt{semCCreate}. Pour observer des différences, on ajoutera une attente de quelques millisecondes avec la fonction taskDelay dans la tâche \texttt{Estime\_Heure}. Ce ralentissement dans son exécution va faire que la tâche va accumuler les jetons en entrée.\\
+	
+	La figure \ref{fig:semB} montre le comportement du programme avec un sémaphore booléen.
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=16cm]{photo/difference_semC_semB/semB}
+		\caption{Simulation avec un sémaphore booléen}
+		\label{fig:semB}
+	\end{figure}
+
+	Ce que l'on observe ici c'est que lors de l'exécution de la tâche \texttt{Estime\_Heure}, elle consomme un jeton et ceux, qu'importe le nombre de jeton qu'elle a loupée. Le cas d'un sémaphore de "type compteur" est illustré à la figure \ref{fig:semC} ci-dessous. 
+
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=16cm]{photo/difference_semC_semB/semC}
+		\caption{Simulation avec un sémaphore compteur}
+		\label{fig:semC}
+	\end{figure}
+	
+	On observe ici que lors de son exécution, la tâche \texttt{Estime\_Heure} va consommer tous les jetons qu'elle aura loupée.
 	
 	
 	\section{Variante}
@@ -250,6 +271,193 @@ pouvez faire un printf).\\
 	Le système conçu est capable d'estimer l'heure à l'aide du bloc \texttt{Estime\_Heure}. Cela est réalisable à l'aide du sémaphore \texttt{H10}, envoyé par l'entité \texttt{Horloge10}. Dans le cas où, pour quelconque raison, l'entité \texttt{Horloge10} n'effectue plus son rôle, la situation est critique et le système n'est plus capable d'estimer l'heure.
 
 	\section{Conclusion}
+	
+	\section{Annexe}
+	
+	
+	\begin{lstlisting}[language=C, frame=single]
+		
+/*
+TP Executif temps-reel manipulation 3 : Transfert de messages
+Mardi 11 avril 2022
+BRIARD Mathis & DUFRENE Victor
+ETN4 G2
+*/
+
+/*
+Elements VxWorks requis par l'application :
+- 3 taches (Estime_Heure, Corrige_Heure et Affiche)
+- 1 semaphore (H10)
+- 2 files de messages (FMHeureReelle et FMHeureLocale)
+- 2 variables partagees (DivH10 et Horaire)
+*/
+
+/*inclusion des bibliotheques*/
+// #include "vxWorks.h"
+// #include "semLib.h"
+// #include "taskLib.h" 
+// #include "msgQLib.h"
+// #include "TP3_Environnement.h"
+#include "string.h"
+#include "stdio.h"
+#include "time.h" 
+
+
+#define STACK_SIZE (size_t)20000
+#define DivH10MAX 9
+
+/*Declarations des semaphores*/
+SEM_ID H10;
+
+/*Declarations des files de messages*/
+MSG_Q_ID FMHeureReelle;
+MSG_Q_ID FMHeureLocale;
+
+/*Declaration des TID*/
+TASK_ID tidEstime_Heure;
+TASK_ID tidCorrige_Heure;
+TASK_ID tidAffiche;
+
+/*Declarations des types*/
+typedef struct  {
+	int seconde;
+	int minute;
+	int heure;
+	
+} Horaire_t;
+
+typedef struct{
+	char provenance[10];
+	Horaire_t horaire;
+} HeureLocale_t;
+
+
+/*Declaration des variables partagees*/
+int DivH10;
+Horaire_t horaire;
+
+/*-----------------------------------*/
+/*------------Fonctions--------------*/
+
+
+/*-----------Estime Heure----------*/
+void Estime_Heure(void)
+{
+	//Declaration des variables locales
+	HeureLocale_t Heure_Locale;        
+	//Attente du semaphore d'eveil et procedure
+	while(1)
+	{
+		semTake(H10, WAIT_FOREVER);
+		if(DivH10<DivH10MAX)
+		{
+			DivH10++;
+		}else{
+			DivH10=0;
+			(horaire.seconde++)%60;
+			if(horaire.seconde==0){
+				(horaire.minute++)%60;
+				if(horaire.minute == 0){
+					(horaire.heure++)%24;
+				}
+			}							
+			char chaine[]="Estimee";
+			strcpy((Heure_Locale.provenance),chaine);
+			Heure_Locale.horaire=horaire;
+			msgQSend(FMHeureLocale, &Heure_Locale, sizeof(
+			HeureLocale_t), WAIT_FOREVER, MSG_PRI_NORMAL);
+		}
+	}
+}
+
+/*----------Corrige Heure----------*/
+void Corrige_Heure(void)
+{
+	HeureLocale_t Heure_Locale;
+	Horaire_t HeureReelle;
+	while(1)
+	{
+		msgQReceive(FMHeureReelle, &HeureReelle, sizeof(Horaire_t),
+		WAIT_FOREVER);
+		horaire=HeureReelle; // Peut etre faire champ a champ
+		DivH10=0;
+		char chaine[]="Corrigee";
+		strcpy((Heure_Locale.provenance),chaine);
+		Heure_Locale.horaire=horaire;
+		msgQSend(FMHeureLocale, &Heure_Locale, sizeof(
+		HeureLocale_t), WAIT_FOREVER, MSG_PRI_NORMAL);
+	}
+}
+
+
+/*-------------Affiche------------*/
+void Affiche(void){
+	//Declaration des variables locales
+	HeureLocale_t Heure_Locale;
+	//Procedure
+	while(1){
+		msgQReceive(FMHeureLocale, &Heure_Locale, sizeof(
+		HeureLocale_t),WAIT_FOREVER);
+		printf("Origine du message : %s\n", 
+		Heure_Locale.provenance);
+		printf("l'heure est: %d heure, %d min, %d sec\n", 
+		Heure_Locale.horaire.heure, 
+		Heure_Locale.horaire.minute, 
+		Heure_Locale.horaire.seconde);
+	}
+}
+
+/*-------------Application------------*/
+int start()
+{
+	//Creation des semaphores
+	H10=semBCreate(SEM_Q_PRIORITY, SEM_EMPTY);
+	FMHeureReelle=msgQCreate(1, sizeof(Horaire_t), MSG_Q_FIFO); 
+	FMHeureLocale=msgQCreate(1, sizeof(HeureLocale_t), MSG_Q_FIFO);
+	
+	
+	//Demarrage des taches
+	printf("Demarrage de l'estimation de l'horloge\n");
+	tidEstime_Heure=taskSpawn("Estime_Heure", 13,0, STACK_SIZE, 
+	(FUNCPTR) Estime_Heure,0,0,0,0,0,0,0,0,0,0);
+	
+	printf("Demarrage de la correction de l'horloge\n");
+	tidCorrige_Heure=taskSpawn("Corrige_Heure", 14,0, STACK_SIZE, 
+	(FUNCPTR)Corrige_Heure,0,0,0,0,0,0,0,0,0,0);
+	
+	printf("Demarrage de l'affichage\n");
+	tidAffiche=taskSpawn("Affiche", 15,0, STACK_SIZE, 
+	(FUNCPTR)Affiche,0,0,0,0,0,0,0,0,0,0);
+	
+	startEnvironment(H10, FMHeureReelle);
+	
+	printf("Fin de start\n");
+	return (EXIT_SUCCESS);
+}
+
+/*--------------Fermeture-------------*/
+int stop()
+{
+	//printf("Debut de stop\n");
+	stopEnvironment();
+	
+	//Destruction des taches
+	taskDelete(tidEstime_Heure);
+	taskDelete(tidCorrige_Heure);
+	taskDelete(tidAffiche);
+	
+	//Desctruction des semaphores
+	semDelete(H10);
+	msgQDelete(FMHeureReelle);
+	msgQDelete(FMHeureLocale);
+	
+	printf("Fin de stop\n");
+	return(EXIT_SUCCESS);
+}
+
+		
+	\end{lstlisting}
+	
 
 	
 \end{document}
