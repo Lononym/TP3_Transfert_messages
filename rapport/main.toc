@@ -1,9 +1,10 @@
 \contentsline {section}{\numberline {1}Introduction}{5}{}%
 \contentsline {subsection}{\numberline {1.1}Contextualisation}{5}{}%
-\contentsline {subsection}{\numberline {1.2}Objectifs du rapport}{5}{}%
-\contentsline {section}{\numberline {2}Solution classique}{6}{}%
-\contentsline {subsection}{\numberline {2.1}Validation du comportement}{6}{}%
-\contentsline {subsection}{\numberline {2.2}Asservissement de la boîte aux lettres}{6}{}%
-\contentsline {subsection}{\numberline {2.3}Différences liées au type de sémaphore}{6}{}%
-\contentsline {section}{\numberline {3}Variante}{6}{}%
-\contentsline {section}{\numberline {4}Conclusion}{6}{}%
+\contentsline {subsection}{\numberline {1.2}Objectifs}{5}{}%
+\contentsline {section}{\numberline {2}Situation}{6}{}%
+\contentsline {section}{\numberline {3}Solution classique}{7}{}%
+\contentsline {subsection}{\numberline {3.1}Validation du comportement}{8}{}%
+\contentsline {subsection}{\numberline {3.2}Asservissement de la boîte aux lettres}{9}{}%
+\contentsline {subsection}{\numberline {3.3}Différences liées au type de sémaphore}{9}{}%
+\contentsline {section}{\numberline {4}Variante}{9}{}%
+\contentsline {section}{\numberline {5}Conclusion}{9}{}%
