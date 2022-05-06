@@ -106,11 +106,13 @@
 
 	Cela permet d'expliquer pourquoi sur la figure (\ref{fig:vue_globale}) il n'y a une absence de drapeaux \texttt{semTake} de la part de \texttt{Estime\_Heure}. En effet, celle-ci est bloquée par \texttt{msgQSend}, et ceci jusqu'à ce que \texttt{Affiche} soit libérée du \texttt{taskDelay}. Également sur la figure (\ref{fig:vue_globale}) il est possible de remarquer qu'un message est envoyé dans \texttt{HeureRéelle}. Celui-ci est récupéré et \texttt{Corrige\_Heure} tente de l'envoyer mais \texttt{HeureLocale} est pleine. Ce qui montre qu'ensuite tous les messages placé dans \texttt{HeureRéelle} en pourront pas être récupéré par \texttt{Corrige\_Heure} car cette tâche est également bloquée par \texttt{msgQSend}.\\
 	
-	Pour conclure sur cette section, il a été vu le comportement du système lorsque la file de message \texttt{HeureLocale} est pleine.
+	Pour conclure sur cette section, il a été vu le comportement du système lorsque la file de message \texttt{HeureLocale} est pleine. Les contraintes temps-réel sont nullement respectées lorsque la tâche \texttt{Affiche} est moins cadencée que ces compères \texttt{Estime\_Heure} et \texttt{Corrige\_Heure}. Il est alors impératif d'avoir une tâche \texttt{Affiche} très réactive afin de vider le plus rapidement possible la boîte aux lettres.
 
 	\subsection{Différences liées au type de sémaphore}
 	
 	\section{Variante}
+	
+	Le système conçu est capable d'estimer l'heure à l'aide du bloc \texttt{Estime\_Heure}. Cela est réalisable à l'aide du sémaphore \texttt{H10}, envoyé par l'entité \texttt{Horloge10}. Dans le cas où, pour quelconque raison, l'entité \texttt{Horloge10} n'effectue plus son rôle, la situation est critique et le système n'est plus capable d'estimer l'heure.
 
 	\section{Conclusion}
 
