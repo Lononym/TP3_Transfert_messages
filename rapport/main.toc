@@ -4,7 +4,7 @@
 \contentsline {section}{\numberline {2}Situation}{6}{}%
 \contentsline {section}{\numberline {3}Solution classique}{7}{}%
 \contentsline {subsection}{\numberline {3.1}Validation du comportement}{8}{}%
-\contentsline {subsection}{\numberline {3.2}Asservissement de la boîte aux lettres}{9}{}%
-\contentsline {subsection}{\numberline {3.3}Différences liées au type de sémaphore}{9}{}%
-\contentsline {section}{\numberline {4}Variante}{9}{}%
-\contentsline {section}{\numberline {5}Conclusion}{9}{}%
+\contentsline {subsection}{\numberline {3.2}Asservissement de la boîte aux lettres}{10}{}%
+\contentsline {subsection}{\numberline {3.3}Différences liées au type de sémaphore}{13}{}%
+\contentsline {section}{\numberline {4}Variante}{13}{}%
+\contentsline {section}{\numberline {5}Conclusion}{13}{}%

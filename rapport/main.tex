@@ -47,23 +47,32 @@
 		\label{fig:structure_fontionnelle}
 	\end{figure}
 	
-	L’application consiste à afficher sur Ecran, l’heure (heure, minute, seconde). L’heurepeut être obtenue par estimation à partir d’une horloge à 10Hz (H10) et pour éviter lesdérives, l’heure réelle est reçue par l’intermédiaire de HeureRéelle (heure, minute, seconde).
-	Pour information, afin de limiter la longueur des observations, la base de temps del’environnement est beaucoup plus rapide que la seconde.
+	L’application consiste à afficher sur Ecran, l’heure (heure, minute, seconde). L’heure
+peut être obtenue par estimation à partir d’une horloge à 10Hz (H10) et pour éviter les
+dérives, l’heure réelle est reçue par l’intermédiaire de HeureRéelle (heure, minute, seconde).
+	Pour information, afin de limiter la longueur des observations, la base de temps de
+l’environnement est beaucoup plus rapide que la seconde.
 	
 
 	\subsection*{Fonction Estime\_Heure}
 	
 	
-	Action activée sur H10, événement périodique apparaissant 10 fois par seconde. Elleincrémente la variable DivH10 si elle est inférieure à 9, sinon elle met la variable à 0 et lavariable Horaire est incrémentée d’une seconde. Un message est transmis dans HeureLocale.
+	Action activée sur H10, événement périodique apparaissant 10 fois par seconde. Elle
+incrémente la variable DivH10 si elle est inférieure à 9, sinon elle met la variable à 0 et la
+variable Horaire est incrémentée d’une seconde. Un message est transmis dans HeureLocale.
 	Le message indique que la valeur transmise est une valeur estimée et contient la nouvelle	valeur de Horaire.
 	
 	\subsection*{Fonction Corrige\_Heure}
 	
-	Action activée sur HeureRéelle. Elle copie la valeur reçue dans Horaire, met lavariable DivH10 à 0 et transmet un message dans HeureLocale. Le message indique que lavaleur transmise est une valeur réelle et contient la nouvelle valeur de Horaire.
+	Action activée sur HeureRéelle. Elle copie la valeur reçue dans Horaire, met la
+variable DivH10 à 0 et transmet un message dans HeureLocale. Le message indique que la
+valeur transmise est une valeur réelle et contient la nouvelle valeur de Horaire.
 	
 	\subsection*{Fonction Affiche}
 	
-	Cette fonction copie sur Ecran l’heure reçue par l’intermédiaire de HeureLocale enindiquant s’il s’agit de l’heure estimée ou de l’heure réelle (c’est la seule tâche ou vouspouvez faire un printf).\\
+	Cette fonction copie sur Ecran l’heure reçue par l’intermédiaire de HeureLocale en
+indiquant s’il s’agit de l’heure estimée ou de l’heure réelle (c’est la seule tâche ou vous
+pouvez faire un printf).\\
 	
 	
 	Le réseau de Pétri qui décrit le comportement des fonctions \texttt{Estime\_Heure} et \texttt{Corrige\_Heure} est donné à la figure \ref{fig:reseau_petri} ci-dessous.
@@ -117,11 +126,15 @@
 		\caption{Attribution des priorités aux différentes tâches}
 		\label{tab:priorite_taches}
 	\end{table}
+
+
+
+	Le code commenté de la solution à un utilisateur pour les priorités ci-dessus est disponible en Annexe 1. La simulation de la situation est lancée et analysée ci-dessous.
 	
 	\subsection{Validation du comportement}
 	
 	La figure \ref{fig:affichage_comportement_normal} montre la sortie de la console pour une exécution classique du programme.
-	
+		
 	\begin{figure}[H]
 		\centering
 		\includegraphics[width=8cm]{photo/affichage_normal/affichage_comportement_normal}
@@ -129,26 +142,35 @@
 		\label{fig:affichage_comportement_normal}
 	\end{figure}
 	
-	Une fois l'initialisation des tâches effectués dans le \texttt{start}, nous observons un affichage de l'heure provenant des deux tâches. On note que l'heure affiché provient beaucoup plus souvent de \texttt{Corrige\_Heure} que de \texttt{Estime\_Heure}.
-	
+	Une fois l'initialisation des tâches effectués dans le \texttt{start}, nous observons un affichage de l'heure provenant des deux tâches. On note que l'heure affiché provient beaucoup plus souvent de \texttt{Corrige\_Heure} que de \texttt{Estime\_Heure}. La figure \ref{fig:affichage_comportement_normal} montre la simulation temporelle des tâches. On y observe l'évolution des états des différentes tâches au cours du temps ainsi que l'influence des divers événements tels que les sémaphores ou les files de messages.  
 	
 	\begin{figure}[H]
 		\centering
 		\includegraphics[width=16cm]{photo/affichage_normal/comportement_normal_fois_3}
-		\caption{Sortie sur la console}
-		\label{fig:affichage_comportement_normal}
+		\caption{Simulation l'impact de la tâche \texttt{Estime\_Heure} et \texttt{Corrige\_Heure}}
+		\label{fig:comportement_normal_fois_3}
 	\end{figure}
 	
-	
+	On précise que les tâches \texttt{HorlogePer} et \texttt{HorlogeRelle} font toutes deux parties de l'environnement du système. La première donne gère le sémaphore H10 tandis que la deuxième gère la file de message HeureRéelle.\\
+	Comme attendu par le comportement spécifié par le cahier des charges. On ici que l'affichage de l'heure (par la tâche \texttt{Affiche}) se fait tous les dix événements sur H10. Le comportement observer ici est donc uniquement lié à la tâche \texttt{Estime\_Heure}. Pour observer l'influence de la seconde tâche, attardons nous sur la figure \ref{fig:interruption_corrige_heure} ci-dessous.
 	
 	\begin{figure}[H]
 		\centering
 		\includegraphics[width=16cm]{photo/affichage_normal/interruption_corrige_heure}
-		\caption{Sortie sur la console}
-		\label{fig:affichage_comportement_normal}
+		\caption{Simulation l'impact de la tâche \texttt{Corrige\_Heure}}
+		\label{fig:interruption_corrige_heure}
 	\end{figure}
 	
-	Le code commenté de la solution à un utilisateur pour les priorités ci-dessus est disponible en Annexe 1. La simulation de la situation est lancée et analysée ci-dessous.
+	La première chose que l'on observe ici est la présence de trois affichage de l'heure et que les deux premiers sont séparé de moins de dix coups d'horloges. Si l'on zoome sur l'endroit où le deuxième affichage de l'heure s'effectue nous obtenons la figure \ref{fig:semB}.
+
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=16cm]{photo/affichage_normal/semB}
+		\caption{Zoom sur le 2e affichage de la figure \ref{fig:interruption_corrige_heure}}
+		\label{fig:semB}
+	\end{figure}
+
+	On observe sur la figure ci-dessus l'activation de \texttt{HorlogeRelle}. Cette tâche va envoyer une nouvelle donnée sur la file de message HeureRéelle ce qui "dit" va dire à la tâche \texttt{Corrige\_Heure} de s'exécuter. Ayant une priorité supérieure à \texttt{Estime\_Heure}, \texttt{Corrige\_Heure} va s'exécuter en premier puis mettre à 0 le compteur DivH10 comme prévu. La tâche \texttt{Estime\_Heure} va ensuite s'exécuter et donc incrémenter le compteur DivH10. C'est pourquoi on ne compte que 9 événements sur H10 entre le deuxième affichage de l'heure et le troisième sur la figure \ref{fig:interruption_corrige_heure} contrairement à la figure \ref{fig:comportement_normal_fois_3} où il y a 10 événements.
 
 
 	\subsection{Asservissement de la boîte aux lettres}	
@@ -220,6 +242,8 @@
 	Pour conclure sur cette section, il a été vu le comportement du système lorsque la file de message \texttt{HeureLocale} est pleine. Les contraintes temps-réel sont nullement respectées lorsque la tâche \texttt{Affiche} est moins cadencée que ces compères \texttt{Estime\_Heure} et \texttt{Corrige\_Heure}. Il est alors impératif d'avoir une tâche \texttt{Affiche} très réactive afin de vider le plus rapidement possible la boîte aux lettres.
 
 	\subsection{Différences liées au type de sémaphore}
+	
+	
 	
 	\section{Variante}
 	

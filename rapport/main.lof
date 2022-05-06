@@ -1,5 +1,12 @@
 \contentsline {figure}{\numberline {1}{\ignorespaces Sortie sur la console\relax }}{6}{}%
 \contentsline {figure}{\numberline {2}{\ignorespaces Sortie sur la console\relax }}{7}{}%
 \contentsline {figure}{\numberline {3}{\ignorespaces Sortie sur la console\relax }}{8}{}%
-\contentsline {figure}{\numberline {4}{\ignorespaces Sortie sur la console\relax }}{9}{}%
-\contentsline {figure}{\numberline {5}{\ignorespaces Sortie sur la console\relax }}{9}{}%
+\contentsline {figure}{\numberline {4}{\ignorespaces Simulation l'impact de la tâche \texttt {Estime\_Heure} et \texttt {Corrige\_Heure}\relax }}{9}{}%
+\contentsline {figure}{\numberline {5}{\ignorespaces Simulation l'impact de la tâche \texttt {Corrige\_Heure}\relax }}{9}{}%
+\contentsline {figure}{\numberline {6}{\ignorespaces Zoom sur le 2e affichage de la figure 5\hbox {}\relax }}{10}{}%
+\contentsline {figure}{\numberline {7}{\ignorespaces Vue globale de la simulation\relax }}{11}{}%
+\contentsline {figure}{\numberline {8}{\ignorespaces Initialisation des tâches\relax }}{11}{}%
+\contentsline {figure}{\numberline {9}{\ignorespaces Premier envoi d'une donnée dans la file de message \texttt {HeureRéelle}\relax }}{12}{}%
+\contentsline {figure}{\numberline {10}{\ignorespaces Émission du sémaphore \texttt {H10} et prise de celui-ci par \texttt {Estime\_Heure} dans le cas où la variable partagée \texttt {DivH10} est inférieure à 10\relax }}{12}{}%
+\contentsline {figure}{\numberline {11}{\ignorespaces Réception et affichage du premier message contenu dans \texttt {HeureLocale}\relax }}{12}{}%
+\contentsline {figure}{\numberline {12}{\ignorespaces Première tentative d'envoi d'un message dans \texttt {HeureLocale} par \texttt {Estime\_Heure}\relax }}{13}{}%
