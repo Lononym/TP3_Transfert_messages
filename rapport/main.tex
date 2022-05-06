@@ -42,6 +42,72 @@
 	
 	\subsection{Asservissement de la boîte aux lettres}	
 	
+	La section qui suit s'intéresse au principe de l'asservissement de la boîte aux lettres. Il s'agit de comprendre le fonctionnement du système lorsque la file de message est pleine. Le cas de la file de message \texttt{HeureLocale} vide n'est pas considérée ici de part sa simplicité. En effet si celle-ci est vide alors la tâche \texttt{Affiche} appelle la fonction bloquante \texttt{msgQReceive} et attend l'émission d'un nouvel horaire. La suite abordera donc le cas de la file de message pleine. Afin d'assurer un remplissage complet de la file de message \texttt{HeureLocale}, le programme est modifié pour faciliter l'arrivée de cet événement. La taille de la file de message est réduite à 3 et une fonction de VxWorks nommée \texttt{taskDelay} est utilisée.\\
+	Celle-ci prends en argument un entier correspondant au nombre de 'top' horloge du CPU virtuel à attendre avant de continuer la suite de la tâche \texttt{Affiche}. La durée d'exécution de la tâche \texttt{Affiche} est alors augmentée, ce qui laissera le temps à \texttt{Estime\_Heure} et \texttt{Corrige\_Heure} de remplir la file de message. Le choix est arbitraire et se porte sur 500 ms. Afin de déterminer le nombre de 'top' horloge à compter, la fonction \texttt{sysClkRateGet} est rentrée dans la console de VxWorks et renvoie la fréquence du CPU virtuel, ici 60 Hz. Le produit $60\times0.5$ donne 30 'top' horloge.\\
+	La figure ci-dessous représente le diagramme d'activité global du système.
+	
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=1\linewidth]{../affichage_ralenti/vue_globale.PNG}
+		\caption{Vue globale de la simulation}
+		\label{fig:vue_globale}
+	\end{figure}
+	
+	La simulation effectuée regroupe l'ensemble des tâches du système comme \texttt{Estime\_Heure},\\ \texttt{Corrige\_Heure} et \texttt{Affiche}. Celle-ci regroupe également le comportement temporel de l'environnement avec \texttt{HorlogePer} et \texttt{HorlogeRéelle} qui sont respectivement les entités \texttt{Horloge10} et \texttt{HorlogeRéelle}. Parmi cet ensemble d'éléments, les plus en haut sont les plus prioritaires et ceux qui sont les plus en bas sont les moins prioritaire.\footnote{Pour remarque, il est déconseillé d'attribuer une priorité supérieure à 100 pour une tâche de fond. En effet dans ce cas la tâche \texttt{RingManager} ne sera jamais exécutée ce qui peut provoquer le plantage de VxWorks.}\\
+	Sur la ligne \texttt{Estime\_Heure}, la tâche récupère convenablement le sémaphore \texttt{H10} et arrive un moment où celui-ci n'est plus pris. Cet événement témoigne du remplissage complet de la file de message \texttt{HeureLocale}. Une analyse étape par étape démontre ce phénomène.
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=1\linewidth]{../affichage_ralenti/lancement des taches.PNG}
+		\caption{Initialisation des tâches}
+		\label{fig:init_task_classique}
+	\end{figure}
+
+	La figure ci-dessus représente l'initialisation des tâches avant de rentrer dans les boucles infinies. Dans le cas de \texttt{Corrige\_Heure}, celle-ci s'initialise et rentre dans la boucle infinie, puis appelle la fonction \texttt{msgQReceive} et reste bloquée dans l'attente d'une donnée dans la file de message \texttt{HeureRéelle}.\\
+	En ce qui concerne \texttt{Estime\_Heure}, cette tâche s'initialise et rentre dans la boucle infinie pour au final être bloquée car aucun sémaphore \texttt{H10} a été émis. Par la suite, la figure suivante représente le premier envoi d'une donnée dans la file de message \texttt{HeureRéelle}. L'appel de la fonction \texttt{msgQSend} est effectué de la part de \texttt{HorlogeRéelle}. Le noyau temps-réel donne la main à \texttt{Corrige\_Heure} qui appelle \texttt{msgQSend}, en effet à l'initialisation celle-ci est restée bloquée avec \texttt{msgQReceive}, l'envoi d'une donnée dans la file de message a permis à cette tâche d'être de nouveau prête. La donnée est donc envoyée dans la file de message \texttt{HeureLocale} et \texttt{Corrige\_Heure} reboucle et revient à nouveau dans l'attente d'une donnée, ici remarquable par l'appel de la fonction \texttt{msgQReceive}. La tâche \texttt{Affiche} n'est pas présente, ce qui dans une utilisation normale devrait être le cas. En regardant les temps, l'initialisation de \texttt{Affiche} se termine à 5,177 ms environ. L'envoi d'un premier message est effectué vers 5,178 ms. Seulement une microseconde sépare ces deux événements, la tâche \texttt{Affiche} est bloquée par la fonction \texttt{taskDelay} pendant une demie-seconde, avant l'appel de la fonction \texttt{msgQReceive}. Le message sera donc récupéré seulement vers 5,7 ms.
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=1\linewidth]{../affichage_ralenti/1er_envoi_HeureReelle.PNG}
+		\caption{Premier envoi d'une donnée dans la file de message \texttt{HeureRéelle}}
+		\label{fig:premier_envoie_heurereelle}
+	\end{figure}
+
+	Il est possible de remarquer qu'entre temps, \texttt{HorlogePer} a émis le sémaphore \texttt{H10} qui a ensuite été récupéré par \texttt{Estime\_Heure}. Aucun appel de \texttt{msgQSend} est effectué, il est donc possible de déduire que la variable partagée \texttt{DivH10} est inférieure à 10. Ce même comportement est visible de nombreuses fois, la figure suivante le précise.
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=1\linewidth]{../affichage_ralenti/estime_heure_h10_incremente.PNG}
+		\caption{Émission du sémaphore \texttt{H10} et prise de celui-ci par \texttt{Estime\_Heure} dans le cas où la variable partagée \texttt{DivH10} est inférieure à 10}
+		\label{fig:estime_heure_h10_incremente}
+	\end{figure}
+
+	D'après la figure (\ref{fig:vue_globale}), entre l'initialisation et jusqu'à 5,6 ms environ, 3 \texttt{msgQSend} sont effectués de la part de \texttt{HorlogeRéelle}. Ces 3 messages sont récupérés par \texttt{Corrige\_Heure} et envoyés dans la file de message \texttt{HeureLocale}. Celle-ci est alors pleine.\\
+	La figure suivante représente le moment où \texttt{Affiche} sort de la fonction bloquante \texttt{taskDelay}. Avant cela un message est envoyé dans la file de message \texttt{HeureRéelle}, la tâche \texttt{Corrige\_Heure} sort de la fonction bloquante et appelle ensuite la fonction \texttt{msgQSend} à 5,696205 ms. Cet appel ne signifie pas que le message est envoyé dans la file de message, en l'occurrence la tâche \texttt{Corrige\_Heure} reste bloquée car la file de message \texttt{HeureLocale} est pleine. 
+
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=1\linewidth]{../affichage_ralenti/premire_fois_affiche_recois.PNG}
+		\caption{Réception et affichage du premier message contenu dans \texttt{HeureLocale}}
+		\label{fig:premiere_fois_affiche_recois}
+	\end{figure}
+
+	À environ 5,696215 ms, la tâche \texttt{Affiche} est libérée de la fonction \texttt{taskDelay} et récupère le premier message. La file de message passe à 2 éléments. Mais celle-ci repasse immédiatement à 3 messages. En effet comme expliqué ci-dessus, la tâche \texttt{Corrige\_Heure} est bloquée dans la fonction \texttt{msgQSend} dans l'attente d'une place dans la file de message. Pour preuve, la suite du diagramme montre que \texttt{Corrige\_Heure} appelle la fonction \texttt{msgQReceive}. En ce qui concerne \texttt{Affiche}, celle-ci redevient bloquante à cause de l'appel de \texttt{taskDelay}, et ceci pour encore 500 ms.\\
+	
+	La file de message \texttt{HeureLocale} est à ce moment là composée de 3 messages, celle-ci est donc remplie. La figure ci-dessous montre lorsque la variable partagée \texttt{DivH10} vaut au moins 10, ce qui n'a jamais été le cas si l'on compte sur la figure (\ref{fig:vue_globale}) l'ensemble des \texttt{semGive} de \texttt{HorlogePer}. À ce moment là \texttt{Estime\_Heure} est enfin amenée à envoyer un message dans \texttt{HeureLocale}. Cela est tenté par l'appel de la fonction \texttt{msgQSend} contenue dans \texttt{Estime\_Heure}. Cependant la file de message \texttt{HeureLocale} est pleine. La tâche \texttt{Estime\_Heure} est alors bloquée par \texttt{msgQSend}. 
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=1\linewidth]{../affichage_ralenti/premiere_fois_EstimeHeure_envoi.PNG}
+		\caption{Première tentative d'envoi d'un message dans \texttt{HeureLocale} par \texttt{Estime\_Heure}}
+		\label{fig:premiere_fois_estime_heure_envoie}
+	\end{figure}
+
+	Cela permet d'expliquer pourquoi sur la figure (\ref{fig:vue_globale}) il n'y a une absence de drapeaux \texttt{semTake} de la part de \texttt{Estime\_Heure}. En effet, celle-ci est bloquée par \texttt{msgQSend}, et ceci jusqu'à ce que \texttt{Affiche} soit libérée du \texttt{taskDelay}. Également sur la figure (\ref{fig:vue_globale}) il est possible de remarquer qu'un message est envoyé dans \texttt{HeureRéelle}. Celui-ci est récupéré et \texttt{Corrige\_Heure} tente de l'envoyer mais \texttt{HeureLocale} est pleine. Ce qui montre qu'ensuite tous les messages placé dans \texttt{HeureRéelle} en pourront pas être récupéré par \texttt{Corrige\_Heure} car cette tâche est également bloquée par \texttt{msgQSend}.\\
+	
+	Pour conclure sur cette section, il a été vu le comportement du système lorsque la file de message \texttt{HeureLocale} est pleine.
+
 	\subsection{Différences liées au type de sémaphore}
 	
 	\section{Variante}
